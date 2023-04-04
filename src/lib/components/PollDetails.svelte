@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import PollStore from "$lib/stores/PollStore";
+  import Button from "./shared/Button.svelte";
   import Card from "./shared/Card.svelte";
 
-  const dispatch = createEventDispatcher();
   export let poll: any = {};
 
   $: totalVotes = poll.votesA + poll.votesB;
@@ -11,9 +11,27 @@
 
   // handle viote
   const handleVote = (option: string, id: number) => {
-    dispatch("addVote", { option, id });
-    console.log(percentA, percentB);
+    PollStore.update((curPolls: any) => {
+      let copiedPolls = [...curPolls];
+      let votedPoll = copiedPolls.find((poll) => poll.id === id);
+
+      // check voting option
+      if (option === "a" && votedPoll) {
+        votedPoll.votesA++;
+      }
+      if (option === "b" && votedPoll) {
+        votedPoll.votesB++;
+      }
+      return copiedPolls;
+    });
   };
+
+  // delete poll
+  const handleDelete = (id: number) => {
+    PollStore.update(curPolls => {
+      return curPolls.filter(poll => poll.id !== id)
+    })
+  }
 </script>
 
 <Card>
@@ -23,26 +41,39 @@
     <div class="answers mt-3 flex flex-col gap-2">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
-        class="answer-a relative bg-stone-100 rounded overflow-hidden p-2 pl-3 text-sm cursor-pointer hover:bg-stone-200/75"
+        class="answer-a relative bg-stone-100 h-10 rounded overflow-hidden flex items-center text-sm cursor-pointer hover:bg-stone-200/75"
         on:click={() => handleVote("a", poll.id)}
       >
         <div
           style="width: {percentA}%;"
-          class="percent-a absolute top-0 left-0 h-full bg-blue-600/20 box-border"
+          class="percent-a absolute top-0 left-0 h-full bg-gradient-to-r from-blue-600 to-blue-500 box-border"
         />
-        <span>{poll.answerA} ({poll.votesA})</span>
+        <span
+          class="absolute ml-3 {poll.votesA > 0 ? 'text-white' : 'text-black'}"
+          >{poll.answerA} ({poll.votesA})</span
+        >
       </div>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
-        class="answer-b relative overflow-hidden bg-stone-100 rounded p-2 pl-3 text-sm cursor-pointer hover:bg-stone-200/75"
+        class="answer-b relative overflow-hidden bg-stone-100 rounded h-10 flex items-center text-sm cursor-pointer hover:bg-stone-200/75"
         on:click={() => handleVote("b", poll.id)}
       >
         <div
-        style="width: {percentB}%;"
-          class="percent-b absolute top-0 left-0 h-full w-[{percentB}%] bg-blue-600/10 box-border"
+          style="width: {percentB}%;"
+          class="percent-b absolute top-0 left-0 h-full w-[{percentB}%] bg-gradient-to-r from-blue-600 to-blue-500 box-border"
         />
-        <span>{poll.answerB} ({poll.votesB})</span>
+        <span
+          class="absolute ml-3 {poll.votesB > 0 ? 'text-white' : 'text-black'}"
+          >{poll.answerB} ({poll.votesB})</span
+        >
       </div>
+    </div>
+    <div class="mt-3 grid place-items-end">
+      <button
+        on:click={() => handleDelete(poll.id)}
+        class="text-xs bg-red-500 p-2 px-3 font-semibold rounded text-white"
+        >Delete</button
+      >
     </div>
   </div>
 </Card>

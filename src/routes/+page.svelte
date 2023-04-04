@@ -25,26 +25,7 @@
   };
   // add new poll to polls
   const addPoll = (e: any) => {
-    let poll = e.detail;
-    polls = [poll, ...polls];
     activeItem = items[0];
-  };
-
-  // add vote
-  const addVoteHandler = (e: any) => {
-    const { option, id } = e.detail;
-    let copiedPolls = [...polls];
-    let votedPoll = copiedPolls.find((poll) => poll.id === id);
-
-    // check voting option
-    if (option === "a" && votedPoll) {
-      votedPoll.votesA++;
-    }
-    if (option === "b" && votedPoll) {
-      votedPoll.votesB++;
-    }
-
-    polls = copiedPolls;
   };
 </script>
 
@@ -57,7 +38,7 @@
   <Tabs {items} {activeItem} on:changeItem={changeItem} />
   <div class="tabs-content mt-5">
     {#if activeItem === items[0]}
-      <PollsList {polls} on:addVote={addVoteHandler} />
+      <PollsList />
     {:else if activeItem === items[1]}
       <AddNewPollForm on:addPoll={addPoll} />
     {/if}
