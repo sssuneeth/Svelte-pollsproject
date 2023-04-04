@@ -1,13 +1,21 @@
 <script lang="ts">
   import PollStore from "$lib/stores/PollStore";
-  import Button from "./shared/Button.svelte";
   import Card from "./shared/Card.svelte";
+  import { tweened } from "svelte/motion";
 
   export let poll: any = {};
 
+  // reactive values
   $: totalVotes = poll.votesA + poll.votesB;
-  $: percentA = Math.floor((100 / totalVotes) * poll.votesA);
-  $: percentB = Math.floor((100 / totalVotes) * poll.votesB);
+  $: percentA = Math.floor((100 / totalVotes) * poll.votesA) || 0;
+  $: percentB = Math.floor((100 / totalVotes) * poll.votesB) || 0;
+
+  // tweened values
+  const tweenedA = tweened(0);
+  const tweenedB = tweened(0);
+  
+  $: tweenedA.set(percentA);
+  $: tweenedB.set(percentB);
 
   // handle viote
   const handleVote = (option: string, id: number) => {
@@ -28,10 +36,10 @@
 
   // delete poll
   const handleDelete = (id: number) => {
-    PollStore.update(curPolls => {
-      return curPolls.filter(poll => poll.id !== id)
-    })
-  }
+    PollStore.update((curPolls) => {
+      return curPolls.filter((poll) => poll.id !== id);
+    });
+  };
 </script>
 
 <Card>
@@ -45,7 +53,7 @@
         on:click={() => handleVote("a", poll.id)}
       >
         <div
-          style="width: {percentA}%;"
+          style="width: {$tweenedA}%;"
           class="percent-a absolute top-0 left-0 h-full bg-gradient-to-r from-blue-600 to-blue-500 box-border"
         />
         <span
@@ -59,7 +67,7 @@
         on:click={() => handleVote("b", poll.id)}
       >
         <div
-          style="width: {percentB}%;"
+          style="width: {$tweenedB}%;"
           class="percent-b absolute top-0 left-0 h-full w-[{percentB}%] bg-gradient-to-r from-blue-600 to-blue-500 box-border"
         />
         <span
